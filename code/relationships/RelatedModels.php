@@ -5,14 +5,15 @@ use Modular\GridField\Configs\GridFieldConfig;
 use Modular\GridField\Components\GridFieldOrderableRows;
 use Modular\Model;
 use Modular\Traits\reflection;
+use Modular\Types\RefType;
 
-class RelatedModels extends \Modular\Field {
+class RelatedModels extends \Modular\TypedField implements RefType {
 	use reflection;
 
 	const ShowAsGridField     = 'grid';
 	const ShowAsTagsField     = 'tags';
-	const RelationshipName    = '';
-	const RelatedClassName    = '';
+	const Name    = '';
+	const Schema    = '';
 	const RelationshipPrefix  = '';
 	const GridFieldConfigName = 'Modular\GridField\GridFieldConfig';
 	const Arity = null;
@@ -54,22 +55,22 @@ class RelatedModels extends \Modular\Field {
 	 * Return all related items. Optionally (for convenience more than anything) provide a relationship name to dereference otherwise this classes
 	 * late static binding relationship_name() will be used.
 	 *
-	 * @param string $relationshipName if supplied use this relationship instead of static relationship_name
+	 * @param string $name if supplied use this relationship instead of static relationship_name
 	 * @return \ArrayList|\DataList
 	 */
-	public function related($relationshipName = '') {
-		$relationshipName = $relationshipName ?: static::relationship_name();
-		return $this()->$relationshipName();
+	public function related($name = '') {
+		$name = $name ?: static::relationship_name();
+		return $this()->$name();
 	}
 
 	/**
 	 * Return an array of IDs from the other end of this extendsions Relationship or the supplied relationship name.
 	 *
-	 * @param string $relationshipName
+	 * @param string $name
 	 * @return array
 	 */
-	public function relatedIDs($relationshipName = '') {
-		return $this->related($relationshipName)->column('ID');
+	public function relatedIDs($name = '') {
+		return $this->related($name)->column('ID');
 	}
 
 	/**
@@ -80,7 +81,7 @@ class RelatedModels extends \Modular\Field {
 	protected function tagFields() {
 
 		return [
-			static::RelationshipName => $this()->isInDB()
+			static::field_name() => $this()->isInDB()
 				? $this->tagField()
 				: $this->saveMasterHint(),
 		];
@@ -93,7 +94,7 @@ class RelatedModels extends \Modular\Field {
 	 */
 	protected function gridFields() {
 		return [
-			static::RelationshipName => $this()->isInDB()
+			static::field_name() => $this()->isInDB()
 				? $this->gridField()
 				: $this->saveMasterHint(),
 		];
@@ -110,7 +111,7 @@ class RelatedModels extends \Modular\Field {
 	 * @return string
 	 */
 	public static function related_field_name($suffix = '') {
-		return static::RelationshipName . $suffix;
+		return static::field_name() . $suffix;
 	}
 
 	/**
@@ -119,30 +120,30 @@ class RelatedModels extends \Modular\Field {
 	 * @return string
 	 */
 	public static function related_class_name() {
-		return static::RelatedClassName;
+		return static::schema();
 	}
 
 	/**
 	 * Return the name of the relationship on the extended model, e.g. 'Members' or 'SocialOrganisations'. This will be
-	 * made from the Related Class Name with 's' appended or can be override by self.RelationshipName
+	 * made from the Related Class Name with 's' appended or can be override by self.Name
 	 *
 	 * @param string $fieldName
 	 * @return string
 	 */
 	public static function relationship_name($fieldName = '') {
-		if (!$relationshipName = static::RelationshipName) {
-			if ($relationshipName = static::name_from_class_name(static::related_class_name())) {
-				$relationshipName = static::RelationshipPrefix . $relationshipName;
+		if (!$name = static::field_name()) {
+			if ($name = static::name_from_class_name(static::related_class_name())) {
+				$name = static::RelationshipPrefix . $name;
 			}
 		}
-		return $relationshipName . ($fieldName ? ".$fieldName" : '');
+		return $name . ($fieldName ? ".$fieldName" : '');
 	}
 
 	protected function tagField() {
 		return (new \TagField(
 			static::relationship_name(),
 			null,
-			\DataObject::get(static::RelatedClassName)
+			\DataObject::get(static::schema())
 		))->setIsMultiple(
 			(bool) $this->config()->get('multiple_select')
 		)->setCanCreate(
@@ -154,21 +155,21 @@ class RelatedModels extends \Modular\Field {
 	 * Return a RelatedModels configured for editing attached MediaModels. If the master record is in the database
 	 * then also add GridFieldOrderableRows (otherwise complaint re UnsavedRelationList not being a DataList happens).
 	 *
-	 * @param string|null $relationshipName
+	 * @param string|null $name
 	 * @param string|null $configClassName name of grid field configuration class otherwise one is manufactured
 	 * @return \GridField
 	 */
-	protected function gridField($relationshipName = null, $configClassName = null) {
-		$relationshipName = $relationshipName
-			?: static::RelationshipName;
+	protected function gridField($name = null, $configClassName = null) {
+		$name = $name
+			?: static::field_name();
 
-		$config = $this->gridFieldConfig($relationshipName, $configClassName);
+		$config = $this->gridFieldConfig($name, $configClassName);
 
 		/** @var \GridField $gridField */
 		$gridField = \GridField::create(
-			$relationshipName,
-			$relationshipName,
-			$this->owner->$relationshipName(),
+			$name,
+			$name,
+			$this->owner->$name(),
 			$config
 		);
 
@@ -178,11 +179,11 @@ class RelatedModels extends \Modular\Field {
 	/**
 	 * Allow override of grid field config
 	 *
-	 * @param $relationshipName
+	 * @param $name
 	 * @param $configClassName
 	 * @return GridFieldConfig
 	 */
-	protected function gridFieldConfig($relationshipName, $configClassName) {
+	protected function gridFieldConfig($name, $configClassName) {
 		$configClassName = $configClassName
 			?: static::GridFieldConfigName
 				?: get_class($this) . 'GridFieldConfig';
@@ -191,8 +192,8 @@ class RelatedModels extends \Modular\Field {
 		$config = $configClassName::create();
 		$config->setSearchPlaceholder(
 
-			singleton(static::RelatedClassName)->fieldDecoration(
-				static::RelationshipName,
+			singleton(static::schema())->fieldDecoration(
+				static::field_name(),
 				'SearchPlaceholder',
 				"Link existing {plural} by Title"
 			)
@@ -220,7 +221,7 @@ class RelatedModels extends \Modular\Field {
 	 */
 	public function onAfterPublish() {
 		/** @var Model|\Versioned $block */
-		foreach ($this()->{static::RelationshipName}() as $block) {
+		foreach ($this()->{static::field_name()}() as $block) {
 			if ($block->hasExtension('Versioned')) {
 				$block->publish('Stage', 'Live', false);
 			}

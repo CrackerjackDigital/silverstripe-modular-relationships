@@ -4,12 +4,12 @@ namespace Modular\Relationships;
 use FormField;
 use Modular\Interfaces\Imagery;
 use Modular\Traits\upload;
+use Modular\Types\ImageType;
 
-class HasImages extends HasManyMany implements Imagery {
+class HasImages extends HasManyMany implements Imagery, ImageType {
 	use upload;
 
-	const RelationshipName        = 'Images';
-	const RelatedClassName        = 'Image';
+	const Name        = 'Images';
 	const DefaultUploadFolderName = 'images';
 
 	private static $allowed_image_files = 'image';
@@ -23,7 +23,7 @@ class HasImages extends HasManyMany implements Imagery {
 	 */
 	public function cmsFields($mode = null) {
 		return [
-			$this->makeUploadField(static::RelationshipName),
+			$this->makeUploadField(static::field_name()),
 		];
 	}
 
@@ -33,7 +33,7 @@ class HasImages extends HasManyMany implements Imagery {
 	 * @return \ArrayList
 	 */
 	public function Images() {
-		return $this()->{self::RelationshipName}();
+		return $this()->{self::Name}();
 	}
 
 	/**
@@ -48,7 +48,7 @@ class HasImages extends HasManyMany implements Imagery {
 
 	public function customFieldConstraints(FormField $field, array $allFieldConstraints) {
 		parent::customFieldConstraints($field, $allFieldConstraints);
-		if ($field->getName() == self::RelationshipName) {
+		if ($field->getName() == self::Name) {
 			$this->configureUploadField($field, 'allowed_image_files');
 		}
 	}

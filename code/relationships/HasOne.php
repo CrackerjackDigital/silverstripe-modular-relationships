@@ -3,10 +3,11 @@ namespace Modular\Relationships;
 
 use Modular\Field;
 use Modular\TypedField;
+use Modular\Types\RefOneType;
+use Modular\Types\RefType;
 
-class HasOne extends TypedField {
-	const RelationshipName    = '';
-	const RelatedClassName    = '';
+abstract class HasOne extends TypedField implements RefOneType {
+	const Name    = '';
 	const RelatedKeyField     = 'ID';
 	const RelatedDisplayField = 'Title';
 	const Arity = 1;
@@ -14,7 +15,25 @@ class HasOne extends TypedField {
 	private static $tab_name = 'Root.Main';
 
 	/**
-	 * Add a drop-down with related classes from RelatedClassName using RelatedKeyField and RelatedDisplayField.
+	 * Add has_one relationships to related class.
+	 *
+	 * @param null $class
+	 * @param null $extension
+	 * @return mixed
+	 */
+	public function extraStatics($class = null, $extension = null) {
+		return array_merge_recursive(
+			parent::extraStatics($class, $extension) ?: [],
+			[
+				'has_one' => [
+					static::relationship_name() => static::related_class_name(),
+				],
+			]
+		);
+	}
+
+	/**
+	 * Add a drop-down with related classes from Schema using RelatedKeyField and RelatedDisplayField.
 	 *
 	 * @param $mode
 	 * @return array
@@ -36,7 +55,7 @@ class HasOne extends TypedField {
 	 * @return string
 	 */
 	public static function related_field_name($suffix = 'ID') {
-		return static::RelationshipName . $suffix;
+		return static::field_name() . $suffix;
 	}
 
 	/**
@@ -45,17 +64,17 @@ class HasOne extends TypedField {
 	 * @return string
 	 */
 	public static function related_class_name() {
-		return static::RelatedClassName;
+		return static::schema();
 	}
 
 	/**
-	 * Returns the RelationshipName for this field if set, optionally appended with the fieldName as for a relationship.
+	 * Returns the Name for this field if set, optionally appended with the fieldName as for a relationship.
 	 *
-	 * @param string $fieldName if supplied will be added on to RelationshipName with a '.' prefix
+	 * @param string $fieldName if supplied will be added on to Name with a '.' prefix
 	 * @return string
 	 */
 	public static function relationship_name($fieldName = '') {
-		return static::RelationshipName ? (static::RelationshipName . ($fieldName ? ".$fieldName" : '')) : '';
+		return static::field_name() ? (static::field_name() . ($fieldName ? ".$fieldName" : '')) : '';
 	}
 
 	/**
@@ -64,24 +83,7 @@ class HasOne extends TypedField {
 	 * @return array
 	 */
 	public static function options() {
-		return \DataObject::get(static::RelatedClassName)->map(static::RelatedKeyField, static::RelatedDisplayField)->toArray();
+		return \DataObject::get(static::schema())->map(static::RelatedKeyField, static::RelatedDisplayField)->toArray();
 	}
 
-	/**
-	 * Add has_one relationships to related class.
-	 *
-	 * @param null $class
-	 * @param null $extension
-	 * @return mixed
-	 */
-	public function extraStatics($class = null, $extension = null) {
-		return array_merge_recursive(
-			parent::extraStatics($class, $extension) ?: [],
-			[
-				'has_one' => [
-					static::relationship_name() => static::related_class_name(),
-				],
-			]
-		);
-	}
 }

@@ -3,7 +3,10 @@ namespace Modular\Fields;
 
 use DataObject;
 use Modular\Field;
+use Modular\GridField\Components\GridFieldOrderableRows;
+use Modular\GridField\Configs\GridFieldConfig;
 use Modular\Model;
+use Modular\TypedField;
 use Versioned;
 
 /**
@@ -12,11 +15,9 @@ use Versioned;
  *
  * @package Modular\Fields
  */
-abstract class Relationship extends Field {
+abstract class Relationship extends TypedField {
 	const ShowAsGridField     = 'grid';
 	const ShowAsTagsField     = 'tags';
-	const RelationshipName    = '';
-	const RelatedClassName    = '';
 	const GridFieldConfigName = 'Modular\GridField\GridFieldConfig';
 
 	const GridFieldOrderableRowsFieldName = 'Sort';
@@ -58,7 +59,7 @@ abstract class Relationship extends Field {
 	}
 
 	protected function availableTags() {
-		$tagClassName = static::RelatedClassName;
+		$tagClassName = static::schema();
 		return $tagClassName::get()->sort('Title');
 	}
 
@@ -67,7 +68,7 @@ abstract class Relationship extends Field {
 	}
 
 	public static function field_name($suffix = '') {
-		return static::RelationshipName . $suffix;
+		return static::field_name() . $suffix;
 	}
 
 	/**
@@ -149,11 +150,11 @@ abstract class Relationship extends Field {
 	 * @return string
 	 */
 	public static function related_class_name($fieldName = '') {
-		return static::RelatedClassName . ($fieldName ? ".$fieldName" : '');
+		return static::schema() . ($fieldName ? ".$fieldName" : '');
 	}
 
 	public static function relationship_name($fieldName = '') {
-		return static::RelationshipName . ($fieldName ? ".$fieldName" : '');
+		return static::field_name() . ($fieldName ? ".$fieldName" : '');
 	}
 
 	/**
@@ -223,7 +224,7 @@ abstract class Relationship extends Field {
 	/**
 	 * Returns a configured GridFieldConfig based on config.gridfield_config_class.
 	 *
-	 * @param string $relationshipName if not supplied then static.RelationshipName via relationship_name() and is updated
+	 * @param string $relationshipName if not supplied then static.field_name() via relationship_name() and is updated
 	 * @param string $configClassName  if not supplied then static.GridFieldConfigName or one is guessed, or base is used and value is updated
 	 * @return GridFieldConfig
 	 */
@@ -238,7 +239,7 @@ abstract class Relationship extends Field {
 		$config = $configClassName::create();
 		$config->setSearchPlaceholder(
 
-			singleton(static::RelatedClassName)->fieldDecoration(
+			singleton(static::schema())->fieldDecoration(
 				$relationshipName,
 				'SearchPlaceholder',
 				"Link existing {plural} by Title"

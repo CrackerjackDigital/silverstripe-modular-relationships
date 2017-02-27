@@ -4,14 +4,52 @@ namespace Modular\Relationships;
 use Modular\Traits\cache;
 use Modular\GridField\GridField;
 use Modular\Helpers\Strings;
+use Modular\Types\RefManyManyType;
 
-class HasManyMany extends RelatedModels {
+class HasManyMany extends RelatedModels implements RefManyManyType {
 	use cache;
 
 	const RelationshipPrefix  = '';
 	const ShowAsTagsField     = 'tags';
 	const GridFieldConfigName = 'Modular\GridField\HasManyManyGridFieldConfig';
 	const Arity = 3;
+
+	/**
+	 * Adds many_many relationships based off relationship_name and related_class_name, and many_many_extraFields such as 'Sort'.
+	 *
+	 * @param null $class
+	 * @param null $extension
+	 * @return array
+	 */
+	public function extraStatics($class = null, $extension = null) {
+		$statics = parent::extraStatics($class, $extension) ?: [];
+
+		if ($name = static::relationship_name('')) {
+			$extra = [];
+
+			if (static::sortable()) {
+				$extra = [
+					'many_many_extraFields' => [
+						$name => [
+							static::SortFieldName => 'Int',
+						],
+					],
+				];
+			}
+
+			$statics = array_merge_recursive(
+				$statics,
+				$extra,
+				[
+					'many_many' => [
+						$name => static::related_class_name(),
+					],
+				]
+			);
+		}
+		return $statics;
+
+	}
 
 	/**
 	 * Add a csv list of implementors of this class as token 'implementors'
@@ -31,7 +69,7 @@ class HasManyMany extends RelatedModels {
 	 * Return a map of derived implementations and their singular names.
 	 *
 	 * @param bool $includeCalledClass if true then the class being called will also be in the returned map
-	 * @return array [ className => relationshipName ]
+	 * @return array [ className => name ]
 	 */
 	public static function implementors($includeCalledClass = false) {
 		$calledClass = get_called_class();
@@ -60,52 +98,15 @@ class HasManyMany extends RelatedModels {
 		$multipleSelect = (bool) $this->config()->get('multiple_select');
 		$canCreate = (bool) $this->config()->get('allow_add_new');
 
-		$relatedClassName = static::RelatedClassName;
+		$schema = static::schema();
 
 		return [
 			(new \TagField(
 				static::relationship_name(),
 				null,
-				$relatedClassName::get()
+				$schema::get()
 			))->setIsMultiple($multipleSelect)->setCanCreate($canCreate),
 		];
-	}
-
-	/**
-	 * Adds many_many relationships based off relationship_name and related_class_name, and many_many_extraFields such as 'Sort'.
-	 *
-	 * @param null $class
-	 * @param null $extension
-	 * @return array
-	 */
-	public function extraStatics($class = null, $extension = null) {
-		$statics = parent::extraStatics($class, $extension) ?: [];
-
-		if ($relationshipName = static::relationship_name('')) {
-			$extra = [];
-
-			if (static::sortable()) {
-				$extra = [
-					'many_many_extraFields' => [
-						$relationshipName => [
-							static::SortFieldName => 'Int',
-						],
-					],
-				];
-			}
-
-			$statics = array_merge_recursive(
-				$statics,
-				$extra,
-				[
-					'many_many' => [
-						$relationshipName => static::related_class_name(),
-					],
-				]
-			);
-		}
-		return $statics;
-
 	}
 
 }

@@ -10,8 +10,8 @@ namespace Modular\Relationships;
 use Modular\Models\Tag;
 
 class HasTags extends HasManyMany {
-	const RelationshipName = 'Tags';
-	const RelatedClassName = 'Modular\Models\Tag';
+	const Name = 'Tags';
+	const Schema = 'Modular\Models\Tag';
 
 	private static $multiple_tags = true;
 
@@ -22,7 +22,7 @@ class HasTags extends HasManyMany {
 	public function cmsFields($mode = null) {
 		return [
 			(new \TagField(
-				static::RelationshipName,
+				static::field_name(),
 				'',
 				$this->availableTags()
 			))->setIsMultiple(

@@ -3,6 +3,7 @@ namespace Modular\Relationships;
 
 use Modular\Fields\ModelTag;
 use Modular\Model;
+use Modular\Types\RefType;
 
 /**
  * RelatedPages
@@ -10,8 +11,8 @@ use Modular\Model;
  * @package Modular\Relationships
  * @method RelatedPages
  */
-abstract class HasRelatedPages extends HasManyMany {
-	const RelatedClassName = 'Page';
+abstract class HasRelatedPages extends HasManyMany implements RefType {
+	const Schema = 'Page';
 
 	private static $multiple_select = true;
 
