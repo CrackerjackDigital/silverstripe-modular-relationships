@@ -16,7 +16,6 @@ class RelatedModels extends \Modular\TypedField implements RefType {
 	const Schema    = '';
 	const RelationshipPrefix  = '';
 	const GridFieldConfigName = 'Modular\GridField\GridFieldConfig';
-	const Arity = null;
 
 	const SortFieldName = GridFieldOrderableRows::SortFieldName;
 

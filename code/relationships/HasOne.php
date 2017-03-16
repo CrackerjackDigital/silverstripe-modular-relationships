@@ -10,7 +10,6 @@ abstract class HasOne extends TypedField implements RefOneType {
 	const Name    = '';
 	const RelatedKeyField     = 'ID';
 	const RelatedDisplayField = 'Title';
-	const Arity = 1;
 
 	private static $tab_name = 'Root.Main';
 

@@ -12,7 +12,6 @@ class HasManyMany extends RelatedModels implements RefManyManyType {
 	const RelationshipPrefix  = '';
 	const ShowAsTagsField     = 'tags';
 	const GridFieldConfigName = 'Modular\GridField\HasManyManyGridFieldConfig';
-	const Arity = 3;
 
 	/**
 	 * Adds many_many relationships based off relationship_name and related_class_name, and many_many_extraFields such as 'Sort'.
