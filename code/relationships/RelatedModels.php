@@ -10,10 +10,10 @@ use Modular\Types\RefType;
 class RelatedModels extends \Modular\TypedField implements RefType {
 	use reflection;
 
+	// relationship name
+	const Name = '';
 	const ShowAsGridField     = 'grid';
 	const ShowAsTagsField     = 'tags';
-	const Name    = '';
-	const Schema    = '';
 	const RelationshipPrefix  = '';
 	const GridFieldConfigName = 'Modular\GridField\GridFieldConfig';
 

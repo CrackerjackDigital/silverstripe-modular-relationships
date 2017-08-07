@@ -9,6 +9,6 @@ use SS_List;
 class HasLinks extends HasMany {
 	const Name = 'Links';
 	const Schema = 'Modular\Models\InternalOrExternalLink';
-	const GridFieldConfigName = 'Modular\GridField\HasLinksGridFieldConfig';
+	const GridFieldConfigName = \Modular\GridField\HasLinksGridFieldConfig::class;
 
 }
