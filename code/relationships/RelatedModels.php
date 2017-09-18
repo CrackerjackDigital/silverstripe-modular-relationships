@@ -16,7 +16,6 @@ class RelatedModels extends \Modular\TypedField implements RefType {
 	const Schema    = '';
 	const RelationshipPrefix  = '';
 	const GridFieldConfigName = 'Modular\GridField\GridFieldConfig';
-	const Arity = null;
 
 	const SortFieldName = GridFieldOrderableRows::SortFieldName;
 
@@ -157,7 +156,9 @@ class RelatedModels extends \Modular\TypedField implements RefType {
 	 *
 	 * @param string|null $name
 	 * @param string|null $configClassName name of grid field configuration class otherwise one is manufactured
+	 *
 	 * @return \GridField
+	 * @throws \Modular\Exceptions\TypeException
 	 */
 	protected function gridField($name = null, $configClassName = null) {
 		$name = $name
@@ -181,7 +182,9 @@ class RelatedModels extends \Modular\TypedField implements RefType {
 	 *
 	 * @param $name
 	 * @param $configClassName
-	 * @return GridFieldConfig
+	 *
+	 * @return \Modular\GridField\Configs\GridFieldConfig
+	 * @throws \Modular\Exceptions\TypeException
 	 */
 	protected function gridFieldConfig($name, $configClassName) {
 		$configClassName = $configClassName
@@ -190,8 +193,8 @@ class RelatedModels extends \Modular\TypedField implements RefType {
 
 		/** @var GridFieldConfig $config */
 		$config = $configClassName::create();
-		$config->setSearchPlaceholder(
 
+		$config->setSearchPlaceholder(
 			singleton(static::schema())->fieldDecoration(
 				static::field_name(),
 				'SearchPlaceholder',

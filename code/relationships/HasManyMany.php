@@ -1,9 +1,8 @@
 <?php
 namespace Modular\Relationships;
 
+use Modular\GridField\Configs\HasManyGridFieldConfig;
 use Modular\Traits\cache;
-use Modular\GridField\GridField;
-use Modular\Helpers\Strings;
 use Modular\Types\RefManyManyType;
 
 class HasManyMany extends RelatedModels implements RefManyManyType {
@@ -11,8 +10,7 @@ class HasManyMany extends RelatedModels implements RefManyManyType {
 
 	const RelationshipPrefix  = '';
 	const ShowAsTagsField     = 'tags';
-	const GridFieldConfigName = 'Modular\GridField\HasManyManyGridFieldConfig';
-	const Arity = 3;
+	const GridFieldConfigName = HasManyGridFieldConfig::class;
 
 	/**
 	 * Adds many_many relationships based off relationship_name and related_class_name, and many_many_extraFields such as 'Sort'.
